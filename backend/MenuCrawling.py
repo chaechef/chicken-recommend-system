@@ -61,6 +61,15 @@ res_id = cxf[['id']] # 음식점 목록 df에서 음식점의 id 열 추출
 arr_rid = res_id.values # 음식점 id열 dataframe 을 list 형식으로 전환 
 arr_rid = list(map(int, arr_rid)) #list 내부의 원소들을 Int 형식으로 변환
 
+else_list = ['사이드','사이드 메뉴','소스','잇템','음료','추가','top_items',
+            '사이드／음료','추가 메뉴','음료 메뉴','소스 추가 메뉴','음료메뉴',
+            '피자','추가메뉴','BEVERAGE MENU','음료추가','음료 추가','소스추가',
+            '소스 추가','밥 메뉴','밥','밥메뉴','튀김','튀김 메뉴','사이드메뉴',
+            'photo_menu_items', '떡볶이','플러스메뉴','플러스 메뉴','음료 및 기타',
+            '기타 메뉴','기타','기타메뉴','굽네 피자 시리즈','치킨과 함께하면 더욱 맛있는 잇템',
+            '최강 사이드 메뉴','SIDE MENU','SIDE','음료수','음료수 추가','음료수 메뉴','음료 메뉴 추가',
+            '마법의 샐러드 메뉴','떡볶이 세트']
+
 #print(arr_rid)
 #print(type(arr_rid))
 
@@ -85,15 +94,20 @@ for shop in Shop.objects.all():
     print(shop.name)
     for sub_menu_list in menu_list:
         items = sub_menu_list['items']
+
         for item_meta in items:
-            item = Item(shop=shop, name=item_meta['name'], amount=item_meta['price'], meta=item_meta)
+            if item_meta['section'] not in else_list:
+                item = Item(shop=shop, name=item_meta['name'], amount=item_meta['price'], meta=item_meta)
             
-            item_image_url = item_meta.get('image', '') # image가 없는 메뉴도 있습니다.
-            if item_image_url:
-                item_image_url = urljoin(Yogiyo.HOST, item_meta['image'].split('?')[0])
-                item_image_name = os.path.basename(item_image_url)
-                item_image_data = requests.get(item_image_url).content
-                item.photo.save(item_image_name, ContentFile(item_image_data), save=False)
+                item_image_url = item_meta.get('image', '') # image가 없는 메뉴도 있습니다.
+
+                if item_image_url:
+                    item_image_url = urljoin(Yogiyo.HOST, item_meta['image'].split('?')[0])
+                    item_image_name = os.path.basename(item_image_url)
+                    item_image_data = requests.get(item_image_url).content
+                    item.photo.save(item_image_name, ContentFile(item_image_data), save=False)
                 
-            print('saving item : {}'.format(item.name))
-            item.save()
+                print('saving item : {}'.format(item.name))
+                item.save()
+            else :
+                pass
